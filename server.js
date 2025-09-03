@@ -27,7 +27,7 @@ const transporter = nodemailer.createTransport({
 });
 
 const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
+  key_id: "rzp_test_RDEW6HLYqFcmZd",
   key_secret: process.env.RAZORPAY_KEY_SECRET,
 });
 
@@ -1147,7 +1147,6 @@ app.get('/api/user/:email/response-times', async (req, res) => {
 });
 
 app.post('/api/payment/create-subscription', async (req, res) => {
-  console.log(process.env.RAZORPAY_KEY_ID)
   try {
     const { email, plan } = req.body;
 
