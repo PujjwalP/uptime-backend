@@ -740,13 +740,6 @@ app.post('/api/webhooks/paddle', express.raw({type: 'application/json'}), async 
   }
 });
 
-module.exports = {
-  handleSubscriptionActivated,
-  handleSubscriptionCancelled,
-  handleSubscriptionPaused,
-  handleSubscriptionResumed,
-  handleSubscriptionCompleted
-};
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   res.json({
