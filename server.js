@@ -443,26 +443,6 @@ async function handleSubscriptionResumed(subscription) {
   }
 }
 
-async function handleSubscriptionCompleted(subscription) {
-  console.log('=== HANDLING SUBSCRIPTION COMPLETED ===');
-  console.log('Subscription object:', JSON.stringify(subscription, null, 2));
-
-  const { error } = await supabase
-    .from('users')
-    .update({ 
-      plan: 'free',
-      subscription_status: 'completed'
-    })
-    .eq('subscription_id', subscription.id);
-   
-  if (error) {
-    console.log('ERROR: Failed to complete subscription in database');
-    console.log('Database error:', JSON.stringify(error, null, 2));
-  } else {
-    console.log('SUCCESS: Subscription completed for subscription:', subscription.id);
-  }
-}
-
 // Cancel subscription endpoint
 app.post('/api/subscription/cancel', async (req, res) => {
   try {
