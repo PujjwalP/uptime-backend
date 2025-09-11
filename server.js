@@ -20,14 +20,7 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 // const supabase = createClient(supabaseUrl, supabaseKey);
 
-// Email configuration
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER, // your actual gmail
-    pass: process.env.EMAIL_APP_PASSWORD // Gmail App Password
-  }
-});
+
 
 const paddle = new Paddle(process.env.PADDLE_API_KEY);
 
@@ -151,234 +144,6 @@ const isValidUrl = (url) => {
   }
 };
 
-// Helper function to send credit notification email
-const sendCreditNotificationEmail = async (userEmail, previousCredit, addedCredit, newCredit) => {
-  const htmlContent = `
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Credits Added - NapStopper</title>
-      <style>
-        body {
-          margin: 0;
-          padding: 0;
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-          background: linear-gradient(135deg, #fff7ed 0%, #fef3c7 50%, #fef9c3 100%);
-          min-height: 100vh;
-        }
-        .container {
-          max-width: 600px;
-          margin: 0 auto;
-          background: white;
-          border-radius: 24px;
-          overflow: hidden;
-          box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-          margin-top: 40px;
-          margin-bottom: 40px;
-        }
-        .header {
-          background: linear-gradient(135deg, #ea580c 0%, #d97706 100%);
-          padding: 32px 24px;
-          text-align: center;
-        }
-        .logo {
-          margin-bottom: 16px;
-        }
-        .logo-text {
-          font-size: 24px;
-          font-weight: bold;
-          color: white;
-        }
-        .header-title {
-          font-size: 28px;
-          font-weight: bold;
-          color: white;
-          margin: 0;
-        }
-        .header-subtitle {
-          font-size: 16px;
-          color: rgba(255, 255, 255, 0.9);
-          margin: 8px 0 0 0;
-        }
-        .content {
-          padding: 40px 32px;
-        }
-        .success-icon {
-          width: 64px;
-          height: 64px;
-          background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-          border-radius: 50%;
-          margin: 0 auto 24px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-        .main-message {
-          font-size: 20px;
-          font-weight: 600;
-          color: #111827;
-          text-align: center;
-          margin-bottom: 32px;
-          line-height: 1.4;
-        }
-        .credit-details {
-          background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-          border-radius: 16px;
-          padding: 24px;
-          margin-bottom: 32px;
-          border: 1px solid #f59e0b;
-        }
-        .credit-row {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 12px;
-          font-size: 16px;
-        }
-        .credit-row:last-child {
-          margin-bottom: 0;
-          padding-top: 12px;
-          border-top: 2px solid #f59e0b;
-          font-weight: bold;
-          font-size: 18px;
-        }
-        .credit-label {
-          color: #92400e;
-          font-weight: 500;
-        }
-        .credit-value {
-          color: #92400e;
-          font-weight: 600;
-        }
-        .added-credit {
-          color: #065f46;
-        }
-        .info-box {
-          background: #f0f9ff;
-          border: 1px solid #0ea5e9;
-          border-radius: 12px;
-          padding: 20px;
-          margin-bottom: 24px;
-        }
-        .info-text {
-          color: #0c4a6e;
-          font-size: 14px;
-          line-height: 1.5;
-          margin: 0;
-        }
-        .footer {
-          background: #f9fafb;
-          padding: 24px 32px;
-          text-align: center;
-          border-top: 1px solid #e5e7eb;
-        }
-        .footer-text {
-          color: #6b7280;
-          font-size: 14px;
-          margin: 0;
-        }
-        .brand-footer {
-          margin-bottom: 12px;
-        }
-        .brand-name {
-          font-weight: bold;
-          color: #111827;
-          font-size: 16px;
-        }
-        @media (max-width: 600px) {
-          .container {
-            margin: 20px;
-            border-radius: 16px;
-          }
-          .content {
-            padding: 32px 24px;
-          }
-          .header {
-            padding: 24px 20px;
-          }
-          .credit-details {
-            padding: 20px;
-          }
-        }
-      </style>
-    </head>
-    <body>
-      <div class="container">
-        <div class="header">
-          <div class="logo">
-            <div class="logo-text">NapStopper</div>
-          </div>
-          <h1 class="header-title">Credits Added!</h1>
-          <p class="header-subtitle">Your account has been successfully topped up</p>
-        </div>
-        
-        <div class="content">
-          <div class="success-icon">
-            ✓
-          </div>
-          
-          <h2 class="main-message">
-            Great news! ${addedCredit.toLocaleString()} credits have been added to your account.
-          </h2>
-          
-          <div class="credit-details">
-            <div class="credit-row">
-              <span class="credit-label">Previous Balance:</span>
-              <span class="credit-value">${previousCredit.toLocaleString()} credits</span>
-            </div>
-            <div class="credit-row">
-              <span class="credit-label added-credit">Credits Added:</span>
-              <span class="credit-value added-credit">+${addedCredit.toLocaleString()} credits</span>
-            </div>
-            <div class="credit-row">
-              <span class="credit-label">New Balance:</span>
-              <span class="credit-value">${newCredit.toLocaleString()} credits</span>
-            </div>
-          </div>
-          
-          <div class="info-box">
-            <p class="info-text">
-              <strong>What are credits used for?</strong><br>
-              Credits are consumed each time we ping your URLs to keep them active. Each ping costs 1 credit, 
-              so your ${newCredit.toLocaleString()} credits will keep your applications running for a long time!
-            </p>
-          </div>
-        </div>
-        
-        <div class="footer">
-          <div class="brand-footer">
-            <div class="brand-name">NapStopper</div>
-          </div>
-          <p class="footer-text">
-            Keep your free-tier applications running 24/7 without any hassle.
-          </p>
-        </div>
-      </div>
-    </body>
-    </html>
-  `;
-
-  const mailOptions = {
-    from: {
-      name: 'NapStopper',
-      address: process.env.EMAIL_USER
-    },
-    to: userEmail,
-    subject: `🎉 ${addedCredit.toLocaleString()} Credits Added to Your NapStopper Account!`,
-    html: htmlContent
-  };
-
-  try {
-    await transporter.sendMail(mailOptions);
-    console.log(`Credit notification email sent to ${userEmail}`);
-    return true;
-  } catch (error) {
-    console.error('Error sending credit notification email:', error);
-    return false;
-  }
-};
 
 // Helper function to get user with links
 const getUserWithLinks = async (email) => {
@@ -874,193 +639,9 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Get current credit for an email
-app.get('/api/credit/:email', async (req, res) => {
-  try {
-    const { email } = req.params;
 
-    // Validate email format
-    if (!isValidEmail(email)) {
-      return res.status(400).json({
-        error: 'Invalid email',
-        message: 'Please provide a valid email address'
-      });
-    }
 
-    // Get user data with links (maintains backward compatibility)
-    const { data: user, error } = await getUserWithLinks(email);
 
-    if (error) {
-      if (error.code === 'PGRST116') {
-        return res.status(404).json({
-          error: 'User not found',
-          message: 'No user found with this email address'
-        });
-      }
-      
-      console.error('Error fetching user credit:', error);
-      return res.status(500).json({
-        error: 'Database error',
-        message: 'Failed to fetch user credit'
-      });
-    }
-
-    res.json({
-      success: true,
-      message: 'Credit retrieved successfully',
-      data: {
-        email: user.email,
-        credit: user.credit,
-        created_at: user.created_at
-      }
-    });
-
-  } catch (error) {
-    console.error('Server error:', error);
-    res.status(500).json({
-      error: 'Internal server error',
-      message: 'Something went wrong on our end'
-    });
-  }
-});
-
-// Add 43200 credits to user's account (with 70k limit)
-app.post('/api/credit/add', async (req, res) => {
-  try {
-    const { email } = req.body;
-    const CREDIT_TO_ADD = 2000;
-    const MAX_CREDIT_LIMIT = 25000;
-
-    // Validate required fields
-    if (!email) {
-      return res.status(400).json({
-        error: 'Missing required field',
-        message: 'Email is required'
-      });
-    }
-
-    // Validate email format
-    if (!isValidEmail(email)) {
-      return res.status(400).json({
-        error: 'Invalid email',
-        message: 'Please provide a valid email address'
-      });
-    }
-
-// Check if user exists and get current credit + last credit added time
-const { data: existingUser, error: checkError } = await supabase
-  .from('users')
-  .select('id, email, credit, last_credit_added_at')
-  .eq('email', email)
-  .single();
-
-if (checkError) {
-  if (checkError.code === 'PGRST116') {
-    return res.status(404).json({
-      error: 'User not found',
-      message: 'No user found with this email address. Please add a URL first to create an account.'
-    });
-  }
-  
-  console.error('Error checking existing user:', checkError);
-  return res.status(500).json({
-    error: 'Database error',
-    message: 'Failed to check user existence'
-  });
-}
-
-// Check if user has already added credits today
-if (existingUser.last_credit_added_at) {
-  const lastCreditDate = new Date(existingUser.last_credit_added_at);
-  const today = new Date();
-  const timeDiff = today - lastCreditDate;
-  const hoursSinceLastCredit = timeDiff / (1000 * 60 * 60);
-  
-  if (hoursSinceLastCredit < 24) {
-    const hoursRemaining = Math.ceil(24 - hoursSinceLastCredit);
-    return res.status(429).json({
-      error: 'Daily limit reached',
-      message: `You can only add credits once per day. Please try again in ${hoursRemaining} hours.`,
-      data: {
-        last_credit_added: existingUser.last_credit_added_at,
-        hours_remaining: hoursRemaining,
-        can_add_again_at: new Date(lastCreditDate.getTime() + 24 * 60 * 60 * 1000)
-      }
-    });
-  }
-}
-
-    // Calculate new credit total
-    const newCredit = existingUser.credit + CREDIT_TO_ADD;
-
-    // Check if adding credits would exceed the limit
-    if (newCredit > MAX_CREDIT_LIMIT) {
-      const remainingCapacity = Math.max(0, MAX_CREDIT_LIMIT - existingUser.credit);
-      return res.status(400).json({
-        error: 'Credit limit exceeded',
-        message: `Adding ${CREDIT_TO_ADD.toLocaleString()} credits would exceed the maximum limit of ${MAX_CREDIT_LIMIT.toLocaleString()}. Current balance: ${existingUser.credit.toLocaleString()}. You can only add ${remainingCapacity.toLocaleString()} more credits.`,
-        data: {
-          current_credit: existingUser.credit,
-          attempted_addition: CREDIT_TO_ADD,
-          would_result_in: newCredit,
-          maximum_allowed: MAX_CREDIT_LIMIT,
-          remaining_capacity: remainingCapacity,
-          can_add_more: remainingCapacity > 0
-        }
-      });
-    }
-
-// Update user's credit and last_credit_added_at timestamp
-const { data: updatedUser, error: updateError } = await supabase
-  .from('users')
-  .update({ 
-    credit: newCredit,
-    last_credit_added_at: new Date().toISOString()
-  })
-  .eq('email', email)
-  .select('email, credit, created_at, last_credit_added_at')
-  .single();
-
-    if (updateError) {
-      console.error('Error updating user credit:', updateError);
-      return res.status(500).json({
-        error: 'Database error',
-        message: 'Failed to update user credit'
-      });
-    }
-
-    // Send email notification
-    const emailSent = await sendCreditNotificationEmail(
-      updatedUser.email,
-      existingUser.credit,
-      CREDIT_TO_ADD,
-      updatedUser.credit
-    );
-
-    res.json({
-      success: true,
-      message: 'Credit added successfully',
-      data: {
-        email: updatedUser.email,
-        previous_credit: existingUser.credit,
-        added_credit: CREDIT_TO_ADD,
-        new_credit: updatedUser.credit,
-        created_at: updatedUser.created_at,
-        last_credit_added_at: updatedUser.last_credit_added_at,
-        email_sent: emailSent,
-        remaining_capacity: MAX_CREDIT_LIMIT - updatedUser.credit,
-        next_credit_available_at: new Date(Date.now() + 24 * 60 * 60 * 1000)
-      }
-    });
-
-  } catch (error) {
-    console.error('Server error:', error);
-    res.status(500).json({
-      error: 'Internal server error',
-      message: 'Something went wrong on our end'
-    });
-  }
-});
 
 // Add URL endpoint - Modified to enforce 3-link limit per user
 app.post('/api/urls', async (req, res) => {
@@ -1095,7 +676,7 @@ app.post('/api/urls', async (req, res) => {
     // Check if user exists
     const { data: existingUser, error: checkError } = await supabase
     .from('users')
-    .select('id, email, credit, created_at, plan')
+    .select('id, email, created_at, plan')
     .eq('email', email)
     .single();
 
@@ -1158,11 +739,10 @@ app.post('/api/urls', async (req, res) => {
         .from('users')
         .insert([
           {
-            email: email,
-            credit: 21600, // Default credit value
+            email: email
           }
         ])
-        .select('id, email, credit, created_at')
+        .select('id, email, created_at')
         .single();
 
       if (createUserError) {
@@ -1264,12 +844,10 @@ app.get('/api/user/:email/links', async (req, res) => {
       data: {
         user: {
           email: user.email,
-          credit: user.credit,
           plan: user.plan,
           subscription_status: user.subscription_status,
           subscription_id: user.subscription_id,
-          created_at: user.created_at,
-          last_credit_added_at: user.last_credit_added_at
+          created_at: user.created_at
         },
         links: user.links || [],
         total_links: user.links?.length || 0,
@@ -1459,8 +1037,7 @@ app.post('/api/users/auth', async (req, res) => {
         .from('users')
         .insert([
           {
-            email: email,
-            credit: 21600 // Default credit value
+            email: email
           }
         ])
         .select()
@@ -1499,7 +1076,6 @@ app.post('/api/users/auth', async (req, res) => {
         user: {
           id: userData.id,
           email: userData.email,
-          credit: userData.credit,
           created_at: userData.created_at
         },
         links: links || [],
@@ -1516,6 +1092,7 @@ app.post('/api/users/auth', async (req, res) => {
     });
   }
 });
+
 // Get user plan
 app.get('/api/user/:email/plan', async (req, res) => {
   try {
@@ -1567,6 +1144,7 @@ app.get('/api/user/:email/plan', async (req, res) => {
     });
   }
 });
+
 // Get response times for all user's links
 app.get('/api/user/:email/response-times', async (req, res) => {
   try {
@@ -1645,7 +1223,6 @@ app.get('/api/user/:email/response-times', async (req, res) => {
     });
   }
 });
-
 
 
 app.listen(PORT, () => {
